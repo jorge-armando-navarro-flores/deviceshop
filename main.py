@@ -53,6 +53,34 @@ def admin():
     return render_template("admin.html")
 
 
+@app.route("/login")
+def login():
+    return render_template("login.html")
+
+
+@app.route("/register")
+def register():
+    return render_template("register.html")
+
+
+@app.route("/forgot-password")
+def forgot_password():
+    return render_template("forgot-password.html")
+
+
+@app.route("/products-search")
+def products_search():
+    return render_template("products-search.html")
+
+
+@app.route("/cart")
+def cart():
+    return render_template("cart.html")
+
+
+
+
+
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)
 
