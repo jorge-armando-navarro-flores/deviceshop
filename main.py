@@ -78,6 +78,11 @@ def cart():
     return render_template("cart.html")
 
 
+@app.route("/my-shopping")
+def my_shopping():
+    return render_template("my-shopping.html")
+
+
 
 
 
