@@ -100,6 +100,7 @@ def register():
             )
             db.session.add(new_user)
             db.session.commit()
+            login_user(new_user)
             return redirect(url_for("home"))
         else:
             flash("You've already signed up with that email, log in instead!")
@@ -114,6 +115,9 @@ def login():
     if request.method == "POST":
         email = request.form.get('email')
         password = request.form.get('password')
+        page = request.form.get('page')
+        print(page)
+
 
         user = User.query.filter_by(email=email).first()
 
@@ -123,7 +127,7 @@ def login():
             # Password incorrect
         elif not check_password_hash(user.password, password):
             flash('Password incorrect, please try again.')
-            return redirect(url_for('login'))
+            return redirect(url_for('blog_post'))
         else:
             login_user(user)
             return redirect(url_for('home'))

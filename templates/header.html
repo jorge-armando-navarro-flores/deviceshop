@@ -73,6 +73,13 @@
                     </li>
 
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('my_shopping') }}">My shopping</a></li>
+                    <li class="nav-item px-1">
+                        <a class="nav-link btn btn-outline-warning" href="{{ url_for('cart') }}">
+                            <i class="bi-cart-fill me-1"></i>
+                            Cart
+                            <span class="badge bg-dark text-white ms-1 rounded-pill">0</span>
+                        </a>
+                    </li>
                     {% else %}
 
                     <li class="nav-item px-1 mb-1"><a class="nav-link btn btn-outline-secondary"
@@ -86,14 +93,16 @@
                     <!--                                    <li><a class="dropdown-item" href="{{ url_for('portfolio_item') }}">Portfolio Item</a></li>-->
                     <!--                                </ul>-->
                     <!--                            </li>-->
-                    {% endif %}
                     <li class="nav-item px-1">
-                        <a class="nav-link btn btn-outline-warning" href="{{ url_for('cart') }}">
+                        <button type="button" class="nav-link btn btn-outline-warning" data-bs-toggle="modal"
+                            data-bs-target="#staticBackdrop">
                             <i class="bi-cart-fill me-1"></i>
                             Cart
                             <span class="badge bg-dark text-white ms-1 rounded-pill">0</span>
-                        </a>
+                        </button>
                     </li>
+                    {% endif %}
+
 
 
                 </ul>
