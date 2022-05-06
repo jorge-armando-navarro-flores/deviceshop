@@ -6,7 +6,7 @@
         <div class="row gx-5">
             <div class="col-lg-3">
                 <div class="d-flex align-items-center mt-lg-5 mb-4">
-                    <img class="img-fluid rounded-circle" src="https://dummyimage.com/50x50/ced4da/6c757d.jpg"
+                    <img class="img-fluid rounded-circle" src="{{ post.author.email|gravatar }}"
                          alt="..."/>
                     <div class="ms-3">
                         <div class="fw-bold">{{post.author.username}}</div>
@@ -43,21 +43,6 @@
                     <a class="btn btn-primary float-end" href="{{ url_for('add_new_post') }}">Edit
                         Post</a>
                 </div>
-                {% elif current_user.is_authenticated: %}
-                <div class="clearfix mb-4">
-                    <a class="btn btn-primary float-end" href="{{ pass }}">Comment</a>
-                </div>
-
-                {% else: %}
-
-                <!-- Button trigger modal -->
-                <div class="clearfix mb-4">
-                    <button type="button" class="btn btn-primary float-end mb-4" data-bs-toggle="modal"
-                            data-bs-target="#staticBackdrop">
-                        Comment
-                    </button>
-                </div>
-
 
                 {% endif %}
 
@@ -69,6 +54,23 @@
                             <form class="mb-4"><textarea class="form-control" rows="3"
                                                          placeholder="Join the discussion and leave a comment!"></textarea>
                             </form>
+                            {% if current_user.is_authenticated: %}
+                            <div class="clearfix mb-4">
+                                <a class="btn btn-primary float-end" href="{{ pass }}">Comment</a>
+                            </div>
+
+                            {% else: %}
+
+                            <!-- Button trigger modal -->
+                            <div class="clearfix mb-4">
+                                <button type="button" class="btn btn-primary float-end mb-4" data-bs-toggle="modal"
+                                        data-bs-target="#staticBackdrop">
+                                    Comment
+                                </button>
+                            </div>
+
+                            {% endif %}
+
                             <!-- Comment with nested comments-->
                             <div class="d-flex mb-4">
                                 <!-- Parent comment-->
