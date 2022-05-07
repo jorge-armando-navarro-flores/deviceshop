@@ -141,22 +141,19 @@ def blog_home():
 
 @app.route("/blog-post/<int:post_id>", methods=["GET", "POST"])
 def blog_post(post_id):
-    form = CommentForm()
-    requested_post = BlogPost.query.get(post_id)
-    if form.validate_on_submit():
-        if not current_user.is_authenticated:
-            flash("You need to login or register to comment.")
-            return redirect(url_for("login"))
 
+    requested_post = BlogPost.query.get(post_id)
+    if request.method == "POST":
+        print("post")
         new_comment = Comment(
-            text=form.comment_text.data,
+            text=request.form.get('comment-text'),
             comment_author=current_user,
             parent_post=requested_post
         )
         db.session.add(new_comment)
         db.session.commit()
 
-    return render_template("blog-post.html", post=requested_post, form=form)
+    return render_template("blog-post.html", post=requested_post)
 
 
 @app.route("/portfolio-overview")
