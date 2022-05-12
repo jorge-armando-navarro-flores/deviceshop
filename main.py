@@ -67,6 +67,11 @@ class Comment(db.Model):
     parent_post = relationship("BlogPost", back_populates="comments")
     text = db.Column(db.Text, nullable=False)
 
+
+Comment.comment_id = db.Column(db.Integer, db.ForeignKey(Comment.id))
+Comment.parent_comment = relationship(Comment, backref="answers", remote_side=Comment.id)
+
+
 # Line below only required once, when creating DB.
 
 
@@ -139,19 +144,31 @@ def blog_home():
     return render_template("blog-home.html")
 
 
-@app.route("/blog-post/<int:post_id>", methods=["GET", "POST"])
-def blog_post(post_id):
+@app.route("/blog-post/<int:post_id>", methods=["GET", "POST"], defaults={'comment_id': None})
+@app.route("/blog-post/<int:post_id>/<int:comment_id>", methods=["GET", "POST"])
+def blog_post(post_id, comment_id):
 
     requested_post = BlogPost.query.get(post_id)
     if request.method == "POST":
-        print("post")
-        new_comment = Comment(
-            text=request.form.get('comment-text'),
-            comment_author=current_user,
-            parent_post=requested_post
-        )
-        db.session.add(new_comment)
-        db.session.commit()
+        if not comment_id:
+            new_comment = Comment(
+                text=request.form.get('comment-text'),
+                comment_author=current_user,
+                parent_post=requested_post
+            )
+            db.session.add(new_comment)
+            db.session.commit()
+        else:
+            requested_comment = Comment.query.get(comment_id)
+            new_answer = Comment(
+                text=request.form.get('comment-text'),
+                comment_author=current_user,
+                parent_post=requested_post,
+                parent_comment=requested_comment
+            )
+            db.session.add(new_answer)
+            db.session.commit()
+            # redirect(url_for('home'))
 
     return render_template("blog-post.html", post=requested_post)
 

@@ -56,7 +56,8 @@
                                           placeholder="Join the discussion and leave a comment!"></textarea>
                                 {% if current_user.is_authenticated: %}
                                 <div class="clearfix mt-4">
-                                    <button type="submit" class="btn btn-primary float-end" href="{{ pass }}">Comment</button>
+                                    <button type="submit" class="btn btn-primary float-end" href="{{ pass }}">Comment
+                                    </button>
                                 </div>
 
                                 {% else: %}
@@ -74,53 +75,75 @@
 
                             {% for comment in post.comments %}
                             <!-- Comment with nested comments-->
-                                <div class="d-flex mb-4">
+                            <div class="d-flex mb-4">
 
-                                    <!-- Parent comment-->
-                                    <div class="flex-shrink-0"><img class="rounded-circle"
-                                                                    src="https://dummyimage.com/50x50/ced4da/6c757d.jpg"
-                                                                    alt="..."/></div>
-                                    <div class="ms-3">
-                                        <div class="fw-bold">Commenter Name</div>
-                                        {{ comment.text }} <a data-bs-toggle="collapse" href="#collapseComments{{ comment.id }}"
-                                                                      role="button" aria-expanded="false"
-                                                                      aria-controls="collapseComments{{ comment.id }}">Answers</a>
-                                        <a data-bs-toggle="collapse" href="#collapseRespond{{ comment.id }}"
-                                           role="button" aria-expanded="false"
-                                           aria-controls="collapseRespond{{ comment.id }}">Respond</a>
-                                        <div class="collapse" id="collapseComments{{ comment.id }}">
-                                            <!-- Child comment 1-->
-                                            <div class="d-flex mt-4">
-                                                <div class="flex-shrink-0"><img class="rounded-circle"
-                                                                                src="https://dummyimage.com/50x50/ced4da/6c757d.jpg"
-                                                                                alt="..."/></div>
-                                                <div class="ms-3">
-                                                    <div class="fw-bold">Commenter Name</div>
-                                                    And under those conditions, you cannot establish a capital-market
-                                                    evaluation
-                                                    of that enterprise. You can't get investors.
-                                                </div>
-                                            </div>
-                                            <!-- Child comment 2-->
-                                            <div class="d-flex mt-4">
-                                                <div class="flex-shrink-0"><img class="rounded-circle"
-                                                                                src="https://dummyimage.com/50x50/ced4da/6c757d.jpg"
-                                                                                alt="..."/></div>
-                                                <div class="ms-3">
-                                                    <div class="fw-bold">Commenter Name</div>
-                                                    When you put money directly to a problem, it makes a good headline.
-                                                </div>
+                                <!-- Parent comment-->
+                                <div class="flex-shrink-0"><img class="rounded-circle"
+                                                                src="https://dummyimage.com/50x50/ced4da/6c757d.jpg"
+                                                                alt="..."/></div>
+                                <div class="ms-3">
+                                    <div class="fw-bold">Commenter Name</div>
+                                    {{ comment.text }} <a data-bs-toggle="collapse"
+                                                          href="#collapseComments{{ comment.id }}"
+                                                          role="button" aria-expanded="false"
+                                                          aria-controls="collapseComments{{ comment.id }}">Answers</a>
+                                    <a data-bs-toggle="collapse" href="#collapseRespond{{ comment.id }}"
+                                       role="button" aria-expanded="false"
+                                       aria-controls="collapseRespond{{ comment.id }}">Respond</a>
+                                    <div class="collapse" id="collapseComments{{ comment.id }}">
+                                        <!-- Child comment 1-->
+                                        <div class="d-flex mt-4">
+                                            <div class="flex-shrink-0"><img class="rounded-circle"
+                                                                            src="https://dummyimage.com/50x50/ced4da/6c757d.jpg"
+                                                                            alt="..."/></div>
+                                            <div class="ms-3">
+                                                <div class="fw-bold">Commenter Name</div>
+                                                And under those conditions, you cannot establish a capital-market
+                                                evaluation
+                                                of that enterprise. You can't get investors.
                                             </div>
                                         </div>
-
-                                        <div class="collapse" id="collapseRespond{{ comment.id }}">
-                                            <form class="m-4"><textarea class="form-control" rows="3"
-                                                                        placeholder="Respond to commenter name"></textarea>
-                                            </form>
+                                        <!-- Child comment 2-->
+                                        <div class="d-flex mt-4">
+                                            <div class="flex-shrink-0"><img class="rounded-circle"
+                                                                            src="https://dummyimage.com/50x50/ced4da/6c757d.jpg"
+                                                                            alt="..."/></div>
+                                            <div class="ms-3">
+                                                <div class="fw-bold">Commenter Name</div>
+                                                When you put money directly to a problem, it makes a good headline.
+                                            </div>
                                         </div>
-
                                     </div>
+
+                                    <div class="collapse" id="collapseRespond{{ comment.id }}">
+                                        <form class="mb-4" action="{{ url_for('blog_post', post_id=post.id, comment_id=comment.id) }}"
+                                              method="post">
+                                <textarea name="comment-text" class="form-control" rows="3"
+                                          placeholder="Join the discussion and leave a comment!"></textarea>
+                                            {% if current_user.is_authenticated: %}
+                                            <div class="clearfix mt-4">
+                                                <button type="submit" class="btn btn-primary float-end"
+                                                        href="{{ pass }}">Respond
+                                                </button>
+                                            </div>
+
+                                            {% else: %}
+
+                                            <!-- Button trigger modal -->
+                                            <div class="clearfix mt-4">
+                                                <button type="button" class="btn btn-primary float-end mb-4"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#staticBackdrop">
+                                                    Respond
+                                                </button>
+                                            </div>
+
+                                            {% endif %}
+                                        </form>
+                                    </div>
+
                                 </div>
+                            </div>
                             {% endfor %}
                             <!-- Single comment-->
                             <div class="d-flex">
