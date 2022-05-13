@@ -170,7 +170,7 @@ def blog_post(post_id, comment_id):
             db.session.commit()
             # redirect(url_for('home'))
 
-    return render_template("blog-post.html", post=requested_post)
+    return render_template("blog-post.html", post=requested_post, visited=set())
 
 
 @app.route("/portfolio-overview")
