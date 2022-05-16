@@ -55,123 +55,133 @@
                                                         alt="..."/></div>
                         <div class="ms-3">
                             <div class="fw-bold">{{ comment.comment_author.username }}</div>
-                            {{ comment.text }} <a data-bs-toggle="collapse"
-                                                  href="#collapseComments{{ comment.id }}"
-                                                  role="button" aria-expanded="false"
-                                                  aria-controls="collapseComments{{ comment.id }}">Answers</a>
+                            {{ comment.text }}
+                            <br>
+
+                            <a data-bs-toggle="collapse"
+                               href="#collapseComments{{ comment.id }}"
+                               role="button" aria-expanded="false"
+                               aria-controls="collapseComments{{ comment.id }}">Answers</a>
+
+
+                            {% if current_user.is_authenticated: %}
                             <a data-bs-toggle="collapse" href="#collapseRespond{{ comment.id }}"
                                role="button" aria-expanded="false"
                                aria-controls="collapseRespond{{ comment.id }}">Respond</a>
-                            <div class="collapse" id="collapseComments{{ comment.id }}">
-                                {{ answers(comment.answers) }}
-                                </div>
-
-                                    <div class="collapse" id="collapseRespond{{ comment.id }}">
 
 
-                                        <div class="d-flex mt-4">
-                                            <div class="flex-shrink-0"><img class="rounded-circle"
-                                                                            src="{{ current_user.email|gravatar }}"
-                                                                            alt="..."/></div>
-                                            <div class="ms-3">
-                                                <div class="fw-bold">{{ current_user.username }}</div>
-                                                <form class="mb-4"
-                                                      action="{{ url_for('blog_post', post_id=post.id, comment_id=comment.id) }}"
-                                                      method="post">
+                            <div class="collapse" id="collapseRespond{{ comment.id }}">
+
+
+                                <div class="d-flex mt-4">
+                                    <div class="flex-shrink-0"><img class="rounded-circle"
+                                                                    src="{{ current_user.email|gravatar }}"
+                                                                    alt="..."/></div>
+                                    <div class="ms-3">
+                                        <div class="fw-bold">{{ current_user.username }}</div>
+                                        <form class="mb-4"
+                                              action="{{ url_for('blog_post', post_id=post.id, comment_id=comment.id) }}"
+                                              method="post">
                                 <textarea name="comment-text" class="form-control" rows="3" cols="40"
                                           placeholder="Join the discussion and leave a comment!"></textarea>
-                                                    {% if current_user.is_authenticated: %}
-                                                    <div class="clearfix mt-4">
-                                                        <button type="submit" class="btn btn-primary float-end"
-                                                                href="{{ pass }}">Respond
-                                                        </button>
-                                                    </div>
 
-                                                    {% else: %}
-
-                                                    <!-- Button trigger modal -->
-                                                    <div class="clearfix mt-4">
-                                                        <button type="button" class="btn btn-primary float-end mb-4"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#staticBackdrop">
-                                                            Respond
-                                                        </button>
-                                                    </div>
-
-                                                    {% endif %}
-                                                </form>
+                                            <div class="clearfix mt-4">
+                                                <button type="submit" class="btn btn-primary float-end"
+                                                        href="{{ pass }}">Respond
+                                                </button>
                                             </div>
-                                        </div>
+
+
+                                        </form>
                                     </div>
-
                                 </div>
-                        </div>
-                                {% endif %}
-                                {% endif %}
-                                {% endfor %}
-                                {% endmacro %}
-
-
-
-
-
-                                <p></p>
                             </div>
-                            {% if current_user.id == 1: %}
-                            <div class="clearfix mb-4">
-                                <a class="btn btn-primary float-end" href="{{ url_for('add_new_post') }}">Edit
-                                    Post</a>
-                            </div>
+                            {% else: %}
+
+                            <a data-bs-toggle="modal"
+                               data-bs-target="#staticBackdrop" href="#">Respond</a>
 
                             {% endif %}
 
-                            <!-- Comments section-->
-                            <section>
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                        <!-- Comment form-->
-                                        <form class="mb-4" action="{{ url_for('blog_post', post_id=post.id) }}"
-                                              method="post">
+                            <div class="collapse" id="collapseComments{{ comment.id }}">
+                                {{ answers(comment.answers) }}
+                            </div>
+
+
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                    {% endmacro %}
+
+
+                    <p></p>
+                </div>
+                {% if current_user.id == 1: %}
+
+                <div class="d-flex justify-content-end">
+                    <div class="clearfix mb-4 px-2">
+                        <a class="btn btn-primary float-end" href="{{ url_for('edit_post', post_id=post.id) }}">Edit
+                            Post</a>
+                    </div>
+
+                    <div class="clearfix mb-4">
+                        <a class="btn btn-danger float-end" href="{{url_for('delete_post', post_id=post.id) }}">Delete
+                            Post</a>
+                    </div>
+                </div>
+
+
+                {% endif %}
+
+                <!-- Comments section-->
+                <section>
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <!-- Comment form-->
+                            <form class="mb-4" action="{{ url_for('blog_post', post_id=post.id) }}"
+                                  method="post">
                                 <textarea name="comment-text" class="form-control" rows="3"
                                           placeholder="Join the discussion and leave a comment!"></textarea>
-                                            {% if current_user.is_authenticated: %}
-                                            <div class="clearfix mt-4">
-                                                <button type="submit" class="btn btn-primary float-end"
-                                                        href="{{ pass }}">Comment
-                                                </button>
-                                            </div>
+                                {% if current_user.is_authenticated: %}
+                                <div class="clearfix mt-4">
+                                    <button type="submit" class="btn btn-primary float-end"
+                                            href="{{ pass }}">Comment
+                                    </button>
+                                </div>
 
-                                            {% else: %}
+                                {% else: %}
 
-                                            <!-- Button trigger modal -->
-                                            <div class="clearfix mt-4">
-                                                <button type="button" class="btn btn-primary float-end mb-4"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#staticBackdrop">
-                                                    Comment
-                                                </button>
-                                            </div>
+                                <!-- Button trigger modal -->
+                                <div class="clearfix mt-4">
+                                    <button type="button" class="btn btn-primary float-end mb-4"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#staticBackdrop">
+                                        Comment
+                                    </button>
+                                </div>
 
-                                            {% endif %}
-                                        </form>
+                                {% endif %}
+                            </form>
 
-                                        {{ answers(post.comments) }}
-                        <div class="d-flex">
-                            <div class="flex-shrink-0"><img class="rounded-circle"
-                                                            src="https://dummyimage.com/50x50/ced4da/6c757d.jpg"
-                                                            alt="..."/></div>
-                            <div class="ms-3">
-                                <div class="fw-bold">Commenter Name</div>
-                                When I look at the universe and all the ways the universe wants to kill us, I find
-                                it hard to reconcile that with statements of beneficence.
+                            {{ answers(post.comments) }}
+                            <div class="d-flex">
+                                <div class="flex-shrink-0"><img class="rounded-circle"
+                                                                src="https://dummyimage.com/50x50/ced4da/6c757d.jpg"
+                                                                alt="..."/></div>
+                                <div class="ms-3">
+                                    <div class="fw-bold">Commenter Name</div>
+                                    When I look at the universe and all the ways the universe wants to kill us, I find
+                                    it hard to reconcile that with statements of beneficence.
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-</section>
-</div>
-</div>
-</div>
+                </section>
+            </div>
+        </div>
+    </div>
 </section>
 </main>
 
