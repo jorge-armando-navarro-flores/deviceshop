@@ -1,0 +1,83 @@
+{% include "admin-header.html" %}
+
+<!-- Begin Page Content -->
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <h1 class="h3 mb-2 text-gray-800">Tables</h1>
+    <p class="mb-4">DataTables is a third party plugin that is used to generate the demo table below.
+        For more information about DataTables, please visit the <a target="_blank"
+                                                                   href="https://datatables.net">official DataTables
+            documentation</a>.</p>
+
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+        </div>
+        <div class="card-body">
+
+            <form class="form-inline" action="{{ url_for(request.endpoint) }}" method="post">
+
+
+                {% for e in model.__table__.columns %}
+                {% if e.name != "id" %}
+                <div class="form-group mx-sm-3 mb-2">
+                    <label class="sr-only">Password</label>
+                    <input name="{{ e.name }}" type="text" class="form-control" placeholder="{{ e.name }}">
+                </div>
+                {% endif %}
+                {% endfor %}
+                <button type="submit" class="btn btn-primary mb-2">Add</button>
+            </form>
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                    <tr>
+                        {% for e in model.__table__.columns %}
+                        {% if e.name != "id" %}
+                        <th>{{ e.name }}</th>
+                        {% endif %}
+                        {% endfor %}
+                        <th>Operations</th>
+                    </tr>
+                    </thead>
+                    <tfoot>
+                    <tr>
+                        {% for e in model.__table__.columns %}
+                        {% if e.name != "id" %}
+                        <th>{{ e.name }}</th>
+                        {% endif %}
+                        {% endfor %}
+                        <th>Operations</th>
+                    </tr>
+                    </tfoot>
+                    <tbody>
+                    {% for product in products %}
+                    <tr>
+                        {% for e in model.__table__.columns %}
+                        {% if e.name != "id" %}
+                       <td>{{ product[e.name] }}</td>
+                        {% endif %}
+                        {% endfor %}
+                        <td>
+                            <a href="#">Edit</a>
+                            <a class="delete" href="#">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- /.container-fluid -->
+
+</div>
+<!-- End of Main Content -->
+
+<!-- Footer -->
+{% include "admin-footer.html" %}</html>

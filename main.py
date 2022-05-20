@@ -13,7 +13,7 @@ from flask_gravatar import Gravatar
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'any-secret-key-you-choose'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///deviceshop.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 ckeditor = CKEditor(app)
 Bootstrap(app)
@@ -37,39 +37,82 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
     name = db.Column(db.String(100))
+
+    # ***************Child Relationship*************#
     posts = relationship("BlogPost", back_populates="author")
     comments = relationship("Comment", back_populates="comment_author")
+    purchases = relationship("Purchase", back_populates="user_purchase")
 
 
 class BlogPost(db.Model):
     __tablename__ = "blog_posts"
+
     id = db.Column(db.Integer, primary_key=True)
+
+    # ***************Parent Relationship*************#
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     author = relationship("User", back_populates="posts")
+
     title = db.Column(db.String(250), unique=True, nullable=False)
     subtitle = db.Column(db.String(250), nullable=False)
     date = db.Column(db.String(250), nullable=False)
     body = db.Column(db.Text, nullable=False)
     img_url = db.Column(db.String(250), nullable=False)
 
-    # ***************Parent Relationship*************#
+    # ***************Child Relationship*************#
     comments = relationship("Comment", back_populates="parent_post")
 
 
 class Comment(db.Model):
     __tablename__ = "comments"
     id = db.Column(db.Integer, primary_key=True)
+
+    # ***************Parent Relationship*************#
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     comment_author = relationship("User", back_populates="comments")
-
-    # ***************Child Relationship*************#
     post_id = db.Column(db.Integer, db.ForeignKey("blog_posts.id"))
     parent_post = relationship("BlogPost", back_populates="comments")
+
     text = db.Column(db.Text, nullable=False)
 
 
 Comment.comment_id = db.Column(db.Integer, db.ForeignKey(Comment.id))
 Comment.parent_comment = relationship(Comment, backref="answers", remote_side=Comment.id)
+
+
+class Purchase(db.Model):
+    __tablename__ = "purchases"
+    id = db.Column(db.Integer, primary_key=True)
+
+    # ***************Parent Relationship*************#
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    user_purchase = relationship("User", back_populates="purchases")
+
+    date = db.Column(db.String(250), nullable=False)
+
+    # ***************Child Relationship*************#
+    products = relationship('Product', secondary='orders')
+
+
+class Order(db.Model):
+    __tablename__ = "orders"
+    id = db.Column(db.Integer, primary_key=True)
+
+    # ***************Parent Relationship*************#
+    purchase_id = db.Column(db.Integer, db.ForeignKey('purchases.id'), primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), primary_key=True)
+
+
+class Product(db.Model):
+    __tablename__ = "products"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    brand = db.Column(db.String(100))
+    price = db.Column(db.Integer)
+    img_url = db.Column(db.String(250), nullable=False)
+
+    # ***************Child Relationship*************#
+    purchases = relationship('Purchase', secondary='orders')
 
 
 # Line below only required once, when creating DB.
@@ -97,7 +140,8 @@ def load_user(user_id):
 @app.route("/")
 def home():
     posts = BlogPost.query.all()
-    return render_template("index.html", all_posts=posts)
+    all_products = Product.query.all()
+    return render_template("index.html", all_posts=posts, all_products=all_products)
 
 
 @app.route("/about")
@@ -218,6 +262,11 @@ def admin():
     return render_template("admin.html")
 
 
+@app.route("/tables")
+def tables():
+    return render_template("tables.html")
+
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -284,6 +333,24 @@ def forgot_password():
 @app.route("/products-search")
 def products_search():
     return render_template("products-search.html")
+
+
+@app.route("/products", methods=["GET", "POST"])
+def products():
+    if request.method == "POST":
+        new_product = Product(
+            name=request.form.get('name'),
+            brand=request.form.get('brand'),
+            price=request.form.get('price'),
+            img_url=request.form.get("img_url"),
+        )
+
+        db.session.add(new_product)
+        db.session.commit()
+
+    all_products = Product.query.all()
+
+    return render_template("tables.html", products=all_products, model=Product)
 
 
 @app.route("/cart")
