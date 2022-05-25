@@ -8,8 +8,9 @@ from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from forms import CreatePostForm, CommentForm
+from forms import CreatePostForm, EditProductForm
 from flask_gravatar import Gravatar
+
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'any-secret-key-you-choose'
@@ -28,6 +29,7 @@ gravatar = Gravatar(app,
                     force_lower=False,
                     use_ssl=False,
                     base_url=None)
+
 
 # CONFIGURE TABLES
 class User(UserMixin, db.Model):
@@ -129,6 +131,7 @@ def admin_only(f):
             return abort(403)
         # Otherwise, continue with the route function
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -221,7 +224,6 @@ def blog_home():
 @app.route("/blog-post/<int:post_id>", methods=["GET", "POST"], defaults={'comment_id': None})
 @app.route("/blog-post/<int:post_id>/<int:comment_id>", methods=["GET", "POST"])
 def blog_post(post_id, comment_id):
-
     requested_post = BlogPost.query.get(post_id)
     if request.method == "POST":
         if not comment_id:
@@ -296,7 +298,6 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-
     if request.method == "POST":
         email = request.form.get('email')
         password = request.form.get('password')
@@ -335,9 +336,10 @@ def products_search():
     return render_template("products-search.html")
 
 
-@app.route("/products", methods=["GET", "POST"])
-def products():
-    if request.method == "POST":
+@app.route("/products", methods=["GET", "POST"], defaults={'operation': None, 'product_id': None})
+@app.route("/products/<operation>/<int:product_id>", methods=["GET", "POST"])
+def products(operation, product_id):
+    if request.method == "POST" and not operation:
         new_product = Product(
             name=request.form.get('name'),
             brand=request.form.get('brand'),
@@ -347,6 +349,30 @@ def products():
 
         db.session.add(new_product)
         db.session.commit()
+    elif operation == "DELETE":
+        product_to_delete = Product.query.get(product_id)
+        if product_to_delete:
+            db.session.delete(product_to_delete)
+            db.session.commit()
+        return redirect(url_for('products'))
+    elif operation == "EDIT":
+        product = Product.query.get(product_id)
+        edit_form = EditProductForm(
+            name=product.name,
+            brand=product.brand,
+            price=product.price,
+            img_url=product.img_url
+
+        )
+        if edit_form.validate_on_submit():
+            product.name = edit_form.name.data
+            product.brand = edit_form.brand.data
+            product.price = edit_form.price.data
+            product.img_url = edit_form.img_url.data
+            db.session.commit()
+            return redirect(url_for('products'))
+
+        return render_template("edit.html", form=edit_form)
 
     all_products = Product.query.all()
 
@@ -363,9 +389,5 @@ def my_shopping():
     return render_template("my-shopping.html")
 
 
-
-
-
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)
-

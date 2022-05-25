@@ -61,8 +61,8 @@
                         {% endif %}
                         {% endfor %}
                         <td>
-                            <a href="#">Edit</a>
-                            <a class="delete" href="#">Delete</a>
+                            <a href="{{ url_for(request.endpoint, operation='EDIT', product_id=product.id) }}">Edit</a>
+                            <a class="delete" href="{{ url_for(request.endpoint, operation='DELETE', product_id=product.id) }}">Delete</a>
                         </td>
                     </tr>
                     {% endfor %}
