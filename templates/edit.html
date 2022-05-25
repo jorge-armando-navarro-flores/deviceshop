@@ -5,11 +5,7 @@
     <div class="row">
         <div class="col-lg-10 col-xl-9 mx-auto py-4">
             <div class="card-body p-4 p-sm-5">
-                {% if is_edit: %}
-                <h1 class="fw-bolder card-title text-center mb-5 fw-light ">Edit post</h1>
-                {% else: %}
-                <h1 class="fw-bolder card-title text-center mb-5 fw-light ">New post</h1>
-                {% endif %}
+                <h1 class="fw-bolder card-title text-center mb-5 fw-light ">Edit</h1>
 
                 {{ ckeditor.load() }}
                 {{ ckeditor.config(name='body') }}

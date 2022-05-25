@@ -14,10 +14,10 @@ class CreatePostForm(FlaskForm):
 
 
 class EditProductForm(FlaskForm):
-    name = StringField("Blog Post Title", validators=[DataRequired()])
-    brand = StringField("Blog Post Title", validators=[DataRequired()])
-    price = IntegerField("Blog Post Title", validators=[DataRequired()])
-    img_url = StringField("Blog Post Title", validators=[DataRequired()])
+    name = StringField("Product Name", validators=[DataRequired()])
+    brand = StringField("Product Brand", validators=[DataRequired()])
+    price = IntegerField("Product Price", validators=[DataRequired()])
+    img_url = StringField("Product Img URL", validators=[DataRequired()])
     submit = SubmitField("Submit Product")
 
 
