@@ -21,3 +21,10 @@ class EditProductForm(FlaskForm):
     submit = SubmitField("Submit Product")
 
 
+class EditUserForm(FlaskForm):
+    username = StringField("User Name", validators=[DataRequired()])
+    email = StringField("User Email", validators=[DataRequired()])
+    password = StringField("User password", validators=[DataRequired()])
+    submit = SubmitField("Submit User")
+
+

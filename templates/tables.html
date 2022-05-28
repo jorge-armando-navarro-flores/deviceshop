@@ -53,16 +53,16 @@
                     </tr>
                     </tfoot>
                     <tbody>
-                    {% for product in products %}
+                    {% for item in items %}
                     <tr>
                         {% for e in model.__table__.columns %}
                         {% if e.name != "id" %}
-                       <td>{{ product[e.name] }}</td>
+                       <td>{{ item[e.name] }}</td>
                         {% endif %}
                         {% endfor %}
                         <td>
-                            <a href="{{ url_for(request.endpoint, operation='EDIT', product_id=product.id) }}">Edit</a>
-                            <a class="delete" href="{{ url_for(request.endpoint, operation='DELETE', product_id=product.id) }}">Delete</a>
+                            <a href="{{ url_for(request.endpoint, operation='EDIT', item_id=item.id) }}">Edit</a>
+                            <a class="delete" href="{{ url_for(request.endpoint, operation='DELETE', item_id=item.id) }}">Delete</a>
                         </td>
                     </tr>
                     {% endfor %}

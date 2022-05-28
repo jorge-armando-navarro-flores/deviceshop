@@ -8,7 +8,7 @@ from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from forms import CreatePostForm, EditProductForm
+from forms import CreatePostForm, EditProductForm, EditUserForm
 from flask_gravatar import Gravatar
 
 app = Flask(__name__)
@@ -38,7 +38,6 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(1000))
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
-    name = db.Column(db.String(100))
 
     # ***************Child Relationship*************#
     posts = relationship("BlogPost", back_populates="author")
@@ -93,7 +92,7 @@ class Purchase(db.Model):
     date = db.Column(db.String(250), nullable=False)
 
     # ***************Child Relationship*************#
-    products = relationship('Product', secondary='orders')
+    products = relationship('Product', secondary='orders', back_populates="purchases")
 
 
 class Order(db.Model):
@@ -114,7 +113,7 @@ class Product(db.Model):
     img_url = db.Column(db.String(250), nullable=False)
 
     # ***************Child Relationship*************#
-    purchases = relationship('Purchase', secondary='orders')
+    purchases = relationship('Purchase', secondary='orders', back_populates="products")
 
 
 # Line below only required once, when creating DB.
@@ -260,6 +259,7 @@ def portfolio_item():
 
 
 @app.route("/admin")
+@admin_only
 def admin():
     return render_template("admin.html")
 
@@ -336,9 +336,9 @@ def products_search():
     return render_template("products-search.html")
 
 
-@app.route("/products", methods=["GET", "POST"], defaults={'operation': None, 'product_id': None})
-@app.route("/products/<operation>/<int:product_id>", methods=["GET", "POST"])
-def products(operation, product_id):
+@app.route("/products", methods=["GET", "POST"], defaults={'operation': None, 'item_id': None})
+@app.route("/products/<operation>/<int:item_id>", methods=["GET", "POST"])
+def products(operation, item_id):
     if request.method == "POST" and not operation:
         new_product = Product(
             name=request.form.get('name'),
@@ -350,13 +350,13 @@ def products(operation, product_id):
         db.session.add(new_product)
         db.session.commit()
     elif operation == "DELETE":
-        product_to_delete = Product.query.get(product_id)
+        product_to_delete = Product.query.get(item_id)
         if product_to_delete:
             db.session.delete(product_to_delete)
             db.session.commit()
         return redirect(url_for('products'))
     elif operation == "EDIT":
-        product = Product.query.get(product_id)
+        product = Product.query.get(item_id)
         edit_form = EditProductForm(
             name=product.name,
             brand=product.brand,
@@ -376,7 +376,47 @@ def products(operation, product_id):
 
     all_products = Product.query.all()
 
-    return render_template("tables.html", products=all_products, model=Product)
+    return render_template("tables.html", items=all_products, model=Product)
+
+
+@app.route("/users", methods=["GET", "POST"], defaults={'operation': None, 'item_id': None})
+@app.route("/users/<operation>/<int:item_id>", methods=["GET", "POST"])
+def users(operation, item_id):
+    if request.method == "POST" and not operation:
+        new_user = User(
+            username=request.form.get('username'),
+            email=request.form.get('email'),
+            password=request.form.get('password'),
+        )
+
+        db.session.add(new_user)
+        db.session.commit()
+    elif operation == "DELETE":
+        user_to_delete = User.query.get(item_id)
+        if user_to_delete:
+            db.session.delete(user_to_delete)
+            db.session.commit()
+        return redirect(url_for('users'))
+    elif operation == "EDIT":
+        user = User.query.get(item_id)
+        edit_form = EditUserForm(
+            username=user.username,
+            email=user.email,
+            password=user.password,
+        )
+
+        if edit_form.validate_on_submit():
+            user.username = edit_form.username.data
+            user.email = edit_form.email.data
+            user.password = edit_form.password.data
+            db.session.commit()
+            return redirect(url_for('users'))
+
+        return render_template("edit.html", form=edit_form)
+
+    all_users = User.query.all()
+
+    return render_template("tables.html", items=all_users, model=User)
 
 
 @app.route("/cart")
