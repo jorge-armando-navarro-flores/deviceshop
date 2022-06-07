@@ -1,6 +1,8 @@
 from functools import wraps
 from flask import Flask, render_template, request, url_for, redirect, flash, send_from_directory
 from datetime import date
+
+from sqlalchemy import func
 from werkzeug.exceptions import abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
@@ -89,10 +91,10 @@ class Purchase(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     user_purchase = relationship("User", back_populates="purchases")
 
-    date = db.Column(db.String(250), nullable=False)
+    date = db.Column(db.String(250))
 
     # ***************Child Relationship*************#
-    products = relationship('Product', secondary='orders', back_populates="purchases")
+    orders = relationship('Order', back_populates="purchase")
 
 
 class Order(db.Model):
@@ -100,8 +102,10 @@ class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     # ***************Parent Relationship*************#
-    purchase_id = db.Column(db.Integer, db.ForeignKey('purchases.id'), primary_key=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), primary_key=True)
+    purchase_id = db.Column(db.Integer, db.ForeignKey('purchases.id'))
+    purchase = relationship("Purchase", back_populates="orders")
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
+    product = relationship("Product", back_populates="orders")
 
 
 class Product(db.Model):
@@ -113,7 +117,7 @@ class Product(db.Model):
     img_url = db.Column(db.String(250), nullable=False)
 
     # ***************Child Relationship*************#
-    purchases = relationship('Purchase', secondary='orders', back_populates="products")
+    orders = relationship('Order', back_populates="product")
 
 
 # Line below only required once, when creating DB.
@@ -419,8 +423,40 @@ def users(operation, item_id):
     return render_template("tables.html", items=all_users, model=User)
 
 
+@app.route("/add-to-cart")
+def add_to_cart():
+    product_id = request.args.get('product_id')
+    current_product = Product.query.filter_by(id=product_id).first()
+    purchase_id = db.session.query(func.max(Purchase.id)).filter_by(user_purchase=current_user).scalar()
+    if not purchase_id:
+        new_purchase = Purchase(
+            user_purchase=current_user
+        )
+        db.session.add(new_purchase)
+        db.session.commit()
+    purchase_id = db.session.query(func.max(Purchase.id)).filter_by(user_purchase=current_user).scalar()
+    current_purchase = Purchase.query.filter_by(id=purchase_id).first()
+
+    new_order = Order(
+        purchase=current_purchase,
+        product=current_product
+    )
+    db.session.add(new_order)
+    db.session.commit()
+
+    print(current_product)
+    print(current_purchase)
+
+    return redirect(url_for("cart"))
+
+
 @app.route("/cart")
 def cart():
+
+    purchase = Purchase.query.filter_by(id=1).first()
+    print(purchase.orders)
+    # count = db.session.query(Order.product, func.count(Order.product)).group_by(Order.product).all()
+    # print(count)
     return render_template("cart.html")
 
 
