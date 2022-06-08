@@ -458,10 +458,10 @@ def cart():
     # print(count)
     purchase_id = db.session.query(func.max(Purchase.id)).filter_by(user_purchase=current_user).scalar()
     print(purchase_id)
-    join = db.session.query(func.count(Order.id), Product) \
+    cart_items = db.session.query(func.count(Order.id), func.sum(Product.price), Product.name, Product.img_url) \
         .select_from(Product).join(Order).group_by(Product.id).filter_by(purchase_id=purchase_id).all()
-    print(join)
-    return render_template("cart.html")
+
+    return render_template("cart.html", items=cart_items)
 
 
 @app.route("/purchase")
