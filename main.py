@@ -452,12 +452,32 @@ def add_to_cart():
 
 @app.route("/cart")
 def cart():
-
-    purchase = Purchase.query.filter_by(id=1).first()
-    print(purchase.orders)
+    # order = Order.query.filter_by(id=1).first()
+    # print(order.product)
     # count = db.session.query(Order.product, func.count(Order.product)).group_by(Order.product).all()
     # print(count)
+    purchase_id = db.session.query(func.max(Purchase.id)).filter_by(user_purchase=current_user).scalar()
+    print(purchase_id)
+    join = db.session.query(func.count(Order.id), Product) \
+        .select_from(Product).join(Order).group_by(Product.id).filter_by(purchase_id=purchase_id).all()
+    print(join)
     return render_template("cart.html")
+
+
+@app.route("/purchase")
+def purchase():
+    purchase_id = db.session.query(func.max(Purchase.id)).filter_by(user_purchase=current_user).scalar()
+    current_purchase = Purchase.query.filter_by(id=purchase_id).first()
+    current_purchase.date = date.today()
+
+    new_purchase = Purchase(
+        user_purchase=current_user
+    )
+    db.session.add(new_purchase)
+    db.session.commit()
+
+
+    return render_template("my-shopping.html")
 
 
 @app.route("/my-shopping")
