@@ -1,6 +1,7 @@
 from functools import wraps
 from flask import Flask, render_template, request, url_for, redirect, flash, send_from_directory
 from datetime import date
+from purchase import MadePurchase
 
 from sqlalchemy import func
 from werkzeug.exceptions import abort
@@ -92,6 +93,7 @@ class Purchase(db.Model):
     user_purchase = relationship("User", back_populates="purchases")
 
     date = db.Column(db.String(250))
+    purchase_total = db.Column(db.Integer)
 
     # ***************Child Relationship*************#
     orders = relationship('Order', back_populates="purchase")
@@ -423,6 +425,15 @@ def users(operation, item_id):
     return render_template("tables.html", items=all_users, model=User)
 
 
+@app.route("/remove-from-cart")
+def remove_from_cart():
+    product_id = request.args.get('product_id')
+    order_to_delete = Order.query.filter_by(product_id=product_id).first()
+    db.session.delete(order_to_delete)
+    db.session.commit()
+    return redirect(url_for("cart"))
+
+
 @app.route("/add-to-cart")
 def add_to_cart():
     product_id = request.args.get('product_id')
@@ -457,8 +468,7 @@ def cart():
     # count = db.session.query(Order.product, func.count(Order.product)).group_by(Order.product).all()
     # print(count)
     purchase_id = db.session.query(func.max(Purchase.id)).filter_by(user_purchase=current_user).scalar()
-    print(purchase_id)
-    cart_items = db.session.query(func.count(Order.id), func.sum(Product.price), Product.name, Product.img_url) \
+    cart_items = db.session.query(func.count(Order.id), Product) \
         .select_from(Product).join(Order).group_by(Product.id).filter_by(purchase_id=purchase_id).all()
 
     return render_template("cart.html", items=cart_items)
@@ -468,21 +478,35 @@ def cart():
 def purchase():
     purchase_id = db.session.query(func.max(Purchase.id)).filter_by(user_purchase=current_user).scalar()
     current_purchase = Purchase.query.filter_by(id=purchase_id).first()
+
+    total = 0
+    for order in current_purchase.orders:
+        total += order.product.price
     current_purchase.date = date.today()
+    current_purchase.purchase_total = total
 
     new_purchase = Purchase(
-        user_purchase=current_user
+        user_purchase=current_user,
     )
+
     db.session.add(new_purchase)
     db.session.commit()
 
-
-    return render_template("my-shopping.html")
+    return redirect(url_for('my_shopping'))
 
 
 @app.route("/my-shopping")
 def my_shopping():
-    return render_template("my-shopping.html")
+    all_purchases = Purchase.query.filter_by(user_purchase=current_user)
+    purchases = []
+    for item in all_purchases:
+        print(item.id)
+        purchase_products = db.session.query(func.count(Order.id), Product) \
+            .select_from(Product).join(Order).group_by(Product.id).filter_by(purchase_id=item.id).all()
+        purchases.append(MadePurchase(purchase_products, item.date, item.purchase_total))
+        print(purchase_products)
+
+    return render_template("my-shopping.html", purchases=purchases)
 
 
 if __name__ == "__main__":

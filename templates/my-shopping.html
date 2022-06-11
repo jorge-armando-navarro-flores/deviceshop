@@ -9,6 +9,8 @@
             <li class="breadcrumb-item"><a href="index.html">Home</a></li>
             <li class="breadcrumb-item active">Portfolio 1</li>
         </ol>
+
+        {% for purchase in purchases %}
         <!-- Project One-->
         <div class="row">
             <div class="col-md-4">
@@ -17,18 +19,19 @@
 
                 <div class="container">
 
-
+                    {% for count, product in purchase.products %}
                     <div class="row">
 
                         <div class="col-md-3">
-                            <a href="#!"><img class="img-fluid rounded mb-3 mb-md-1" src="https://via.placeholder.com/700x300" alt="..."/></a>
+                            <a href="#!"><img class="img-fluid rounded mb-3 mb-md-1" src="{{ product.img_url }}" alt="..."/></a>
                         </div>
                         <div class="col-md-9">
-                            <p>#{{ pass }}</p>
+                            <p>{{ product.name }} ({{ count }})</p>
 
                         </div>
 
                     </div>
+                    {% endfor %}
 
                     <div class="row">
 
@@ -47,7 +50,7 @@
             </div>
             <div class="col-md-2">
                 <h5>Fecha</h5>
-                <p>#{{ pass }}</p>
+                <p>{{ purchase.date }}</p>
             </div>
             <div class="col-md-2">
                 <h5>Forma de pago</h5>
@@ -59,11 +62,11 @@
             </div>
             <div class="col-md-2">
                 <h5>Total</h5>
-                <p>#{{ pass }}</p>
+                <p>{{ purchase.total }}</p>
             </div>
         </div>
         <hr>
-
+        {% endfor %}
 
         <!-- Project Two-->
         <div class="row">

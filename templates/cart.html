@@ -10,32 +10,27 @@
             <li class="breadcrumb-item active">Portfolio 1</li>
         </ol>
 
-        {% for count, price, name, img_url in items %}
+        {% for count, product in items %}
         <!-- Project One-->
-        <h2 id="{{ pass }}">{{ name }}</h2>
+        <h2 id="{{ pass }}">{{ product.name }}</h2>
         <div class="row">
             <div class="col-md-3">
-                <a href="#!"><img class="img-fluid rounded mb-3 mb-md-0" src="{{ img_url }}" alt="..."/></a>
+                <a href="#!"><img class="img-fluid rounded mb-3 mb-md-0" src="{{ product.img_url }}" alt="..."/></a>
             </div>
             <div class="col-md-7 ">
                 <h3 class="text-center"> Cantidad </h3>
                 <div class="d-flex justify-content-center">
-                    <form action="borrar_del_carrito.php" method="post" class="mx-1">
-                        <button name="borrar" value="{{ pass }}" class="btn btn-danger" type="submit">-</button>
-
-                    </form>
+                    <a class="btn btn-danger" href="{{ url_for('remove_from_cart', product_id=product.id) }}">-</a>
                     <h4 class="text-center mx-1">{{ count }}</h4>
-                    <form action="agregar_al_carrito.php" method="post" class="mx-1">
-                        <button name="alcarrito" value="{{ pass }}" class="btn btn-success" type="submit">+</button>
+                    <a class="btn btn-success" href="{{ url_for('add_to_cart', product_id=product.id) }}">+</a>
 
-                    </form>
                 </div>
             </div>
             <div class="col-md-2">
                 <h3>Price
 
                 </h3>
-                <h4 class="fs-1">${{ price }}</h4>
+                <h4 class="fs-1">${{ product.price * count }}</h4>
 
 
             </div>
@@ -107,7 +102,7 @@
                 </a>
             </li>
         </ul>
-         <a class="btn btn-success float-end" href="{{ url_for('purchase') }}">Purchase</a>
+        <a class="btn btn-success float-end" href="{{ url_for('purchase') }}">Purchase</a>
     </div>
 
 </section>
