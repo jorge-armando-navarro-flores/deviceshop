@@ -13,7 +13,7 @@ from flask_bootstrap import Bootstrap
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from forms import CreatePostForm, EditProductForm, EditUserForm
-from viewmodels import LoginViewModel
+from viewmodels import LoginViewModel, PostViewModel
 
 db.create_all()
 
@@ -119,27 +119,10 @@ def blog_home():
 @app.route("/blog-post/<int:post_id>", methods=["GET", "POST"], defaults={'comment_id': None})
 @app.route("/blog-post/<int:post_id>/<int:comment_id>", methods=["GET", "POST"])
 def blog_post(post_id, comment_id):
-    requested_post = BlogPost.query.get(post_id)
-    if request.method == "POST":
-        if not comment_id:
-            new_comment = Comment(
-                text=request.form.get('comment-text'),
-                comment_author=current_user,
-                parent_post=requested_post
-            )
-            db.session.add(new_comment)
-            db.session.commit()
-        else:
-            requested_comment = Comment.query.get(comment_id)
-            new_answer = Comment(
-                text=request.form.get('comment-text'),
-                comment_author=current_user,
-                parent_post=requested_post,
-                parent_comment=requested_comment
-            )
-            db.session.add(new_answer)
-            db.session.commit()
-            # redirect(url_for('home'))
+
+    post_view_model = PostViewModel(method=request.method, post_id=post_id)
+    post_view_model.fetch_comments(form=request.form, comment_id=comment_id)
+    requested_post = post_view_model.get_requested_post()
 
     return render_template("blog-post.html", post=requested_post, visited=set())
 
