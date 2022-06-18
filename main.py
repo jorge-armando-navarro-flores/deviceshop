@@ -2,128 +2,18 @@ from functools import wraps
 from flask import Flask, render_template, request, url_for, redirect, flash, send_from_directory
 from datetime import date
 from purchase import MadePurchase
-
+from models import db, User, BlogPost, Comment, Purchase, Order, Product
 from sqlalchemy import func
 from werkzeug.exceptions import abort
 from werkzeug.security import generate_password_hash, check_password_hash
+from __init__ import app, login_manager
 from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
-from flask_ckeditor import CKEditor
+
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from forms import CreatePostForm, EditProductForm, EditUserForm
-from flask_gravatar import Gravatar
-
-app = Flask(__name__)
-
-app.config['SECRET_KEY'] = 'any-secret-key-you-choose'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///deviceshop.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-ckeditor = CKEditor(app)
-Bootstrap(app)
-db = SQLAlchemy(app)
-login_manager = LoginManager()
-login_manager.init_app(app)
-gravatar = Gravatar(app,
-                    size=50,
-                    rating='g',
-                    default='retro',
-                    force_default=False,
-                    force_lower=False,
-                    use_ssl=False,
-                    base_url=None)
-
-
-# CONFIGURE TABLES
-class User(UserMixin, db.Model):
-    __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(1000))
-    email = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
-
-    # ***************Child Relationship*************#
-    posts = relationship("BlogPost", back_populates="author")
-    comments = relationship("Comment", back_populates="comment_author")
-    purchases = relationship("Purchase", back_populates="user_purchase")
-
-
-class BlogPost(db.Model):
-    __tablename__ = "blog_posts"
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    # ***************Parent Relationship*************#
-    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    author = relationship("User", back_populates="posts")
-
-    title = db.Column(db.String(250), unique=True, nullable=False)
-    subtitle = db.Column(db.String(250), nullable=False)
-    date = db.Column(db.String(250), nullable=False)
-    body = db.Column(db.Text, nullable=False)
-    img_url = db.Column(db.String(250), nullable=False)
-
-    # ***************Child Relationship*************#
-    comments = relationship("Comment", back_populates="parent_post")
-
-
-class Comment(db.Model):
-    __tablename__ = "comments"
-    id = db.Column(db.Integer, primary_key=True)
-
-    # ***************Parent Relationship*************#
-    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    comment_author = relationship("User", back_populates="comments")
-    post_id = db.Column(db.Integer, db.ForeignKey("blog_posts.id"))
-    parent_post = relationship("BlogPost", back_populates="comments")
-
-    text = db.Column(db.Text, nullable=False)
-
-
-Comment.comment_id = db.Column(db.Integer, db.ForeignKey(Comment.id))
-Comment.parent_comment = relationship(Comment, backref="answers", remote_side=Comment.id)
-
-
-class Purchase(db.Model):
-    __tablename__ = "purchases"
-    id = db.Column(db.Integer, primary_key=True)
-
-    # ***************Parent Relationship*************#
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    user_purchase = relationship("User", back_populates="purchases")
-
-    date = db.Column(db.String(250))
-    purchase_total = db.Column(db.Integer)
-
-    # ***************Child Relationship*************#
-    orders = relationship('Order', back_populates="purchase")
-
-
-class Order(db.Model):
-    __tablename__ = "orders"
-    id = db.Column(db.Integer, primary_key=True)
-
-    # ***************Parent Relationship*************#
-    purchase_id = db.Column(db.Integer, db.ForeignKey('purchases.id'))
-    purchase = relationship("Purchase", back_populates="orders")
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
-    product = relationship("Product", back_populates="orders")
-
-
-class Product(db.Model):
-    __tablename__ = "products"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    brand = db.Column(db.String(100))
-    price = db.Column(db.Integer)
-    img_url = db.Column(db.String(250), nullable=False)
-
-    # ***************Child Relationship*************#
-    orders = relationship('Order', back_populates="product")
-
-
-# Line below only required once, when creating DB.
-
+from viewmodels import LoginViewModel
 
 db.create_all()
 
@@ -304,24 +194,11 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == "POST":
-        email = request.form.get('email')
-        password = request.form.get('password')
-        page = request.form.get('page')
-        print(page)
 
-        user = User.query.filter_by(email=email).first()
-
-        if not user:
-            flash("That email does not exist, please try again.")
-            return redirect(url_for('login'))
-            # Password incorrect
-        elif not check_password_hash(user.password, password):
-            flash('Password incorrect, please try again.')
-            return redirect(url_for('blog_post'))
-        else:
-            login_user(user)
-            return redirect(page)
+    login_view_model = LoginViewModel(form=request.form, method=request.method)
+    login_view_model.check_username()
+    if login_view_model.get_login_success():
+        return redirect(url_for(login_view_model.get_redirect_page()))
 
     return render_template("login.html")
 
